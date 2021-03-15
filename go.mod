@@ -17,4 +17,5 @@ require (
 	golang.org/x/sys v0.0.0-20210309074719-68d13333faf2 // indirect
 	gopkg.in/macaroon-bakery.v2 v2.3.0 // indirect
 	gopkg.in/robfig/cron.v2 v2.0.0-20150107220207-be2e0b0deed5 // indirect
+	gopkg.in/yaml.v2 v2.2.2 // indirect
 )

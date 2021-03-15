@@ -4,29 +4,44 @@ import (
 	"fmt"
 	lxd "github.com/lxc/lxd/client"
 	"github.com/lxc/lxd/shared/logger"
+	"gopkg.in/yaml.v2"
 	"io/ioutil"
+	"os"
 )
 
-func main()  {
-	d,err  := InitLxdInstanceServer("192.168.31.14")
-	if err != nil{
+func main() {
+	d, err := InitLxdInstanceServer()
+	if err != nil {
 		logger.Error(err.Error())
 		return
 	}
-	err = vga(*d,"win7")
-	if err != nil{
+	err = vga(*d, "win7")
+	if err != nil {
 		logger.Error(err.Error())
 		return
 	}
 }
 
-func InitLxdInstanceServer(manageip string) (*lxd.InstanceServer, error) {
-	cert, err := ioutil.ReadFile("/home/zyx/.config/lxc/client.crt")
+func InitLxdInstanceServer() (*lxd.InstanceServer, error) {
+	ConfigFile, err := os.Open("config.yml")
+	if err != nil {
+		return nil, err
+	}
+	defer ConfigFile.Close()
+
+	var cfg Config
+	decoder := yaml.NewDecoder(ConfigFile)
+	err = decoder.Decode(&cfg)
 	if err != nil {
 		return nil, err
 	}
 
-	key, err := ioutil.ReadFile("/home/zyx/.config/lxc/client.key")
+	cert, err := ioutil.ReadFile(cfg.Server.Cert)
+	if err != nil {
+		return nil, err
+	}
+
+	key, err := ioutil.ReadFile(cfg.Server.Key)
 	if err != nil {
 		return nil, err
 	}
@@ -36,7 +51,7 @@ func InitLxdInstanceServer(manageip string) (*lxd.InstanceServer, error) {
 		TLSClientKey:       string(key),
 		InsecureSkipVerify: true,
 	}
-	server, err := lxd.ConnectLXD(fmt.Sprintf("https://%s:8443", manageip), args)
+	server, err := lxd.ConnectLXD(fmt.Sprintf("https://%s:%s", cfg.Server.Host, cfg.Server.Port), args)
 	if err != nil {
 		return nil, err
 	}
