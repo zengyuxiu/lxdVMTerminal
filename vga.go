@@ -5,11 +5,12 @@ import (
 	"github.com/gorilla/websocket"
 	lxd "github.com/lxc/lxd/client"
 	"github.com/lxc/lxd/shared/api"
+	"github.com/lxc/lxd/shared/logger"
 	"io"
 	"net"
 )
 
-func vga(d lxd.InstanceServer, name string) error {
+func vga(d lxd.InstanceServer, name string, spice_socket chan string) {
 	var err error
 
 	// We currently use the control websocket just to abort in case of errors.
@@ -44,16 +45,15 @@ func vga(d lxd.InstanceServer, name string) error {
 
 	listener, err = net.Listen("tcp", "127.0.0.1:0")
 	if err != nil {
-		return err
+		logger.Error(err.Error())
 	}
 	defer listener.Close()
 
 	addr := listener.Addr().(*net.TCPAddr)
-	socket = fmt.Sprintf("spice://127.0.0.1:%d", addr.Port)
-	fmt.Printf(socket)
+	socket = fmt.Sprintf("ws://127.0.0.1:%d", addr.Port)
 	op, connect, err := d.ConsoleInstanceDynamic(name, req, &consoleArgs)
 	if err != nil {
-		return err
+		logger.Error(err.Error())
 	}
 
 	// Handle connections to the socket.
@@ -79,12 +79,12 @@ func vga(d lxd.InstanceServer, name string) error {
 			}(conn)
 		}
 	}()
-
-	// Wait for the operation to complete.
+	go func() {
+		spice_socket <- socket
+	}()
 	err = op.Wait()
 	if err != nil {
-		return err
+		logger.Error(err.Error())
 	}
 
-	return nil
 }
