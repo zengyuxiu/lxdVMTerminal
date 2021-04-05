@@ -17,15 +17,20 @@ func StartServer() {
 		d, err := InitLxdInstanceServer()
 		if err != nil {
 			logger.Error(err.Error())
+			return
 		}
-
+		server := *d
+		w.Header().Set("Access-Control-Allow-Origin", "*")
 		socket := make(chan string)
 		vars := mux.Vars(r)
-		go vga(*d, vars["name"], socket)
-		spice_socket := <-socket
-
+		go vga(server, vars["name"], socket)
+		spiceSocket := <-socket
 		w.WriteHeader(302)
-		w.Write([]byte(spice_socket))
+		_, err = w.Write([]byte(spiceSocket))
+		if err != nil {
+			logger.Error(err.Error())
+			return
+		}
 	})
 
 	srv := &http.Server{
