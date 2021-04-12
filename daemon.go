@@ -8,7 +8,7 @@ import (
 	"os"
 )
 
-func InitLxdInstanceServer() (*lxd.InstanceServer, error) {
+func InitLxdInstanceServer(host string) (*lxd.InstanceServer, error) {
 	ConfigFile, err := os.Open("config.yml")
 	if err != nil {
 		return nil, err
@@ -37,7 +37,7 @@ func InitLxdInstanceServer() (*lxd.InstanceServer, error) {
 		TLSClientKey:       string(key),
 		InsecureSkipVerify: true,
 	}
-	server, err := lxd.ConnectLXD(fmt.Sprintf("https://%s:%s", cfg.Server.Host, cfg.Server.Port), args)
+	server, err := lxd.ConnectLXD(fmt.Sprintf("https://%s:%s", host, cfg.Server.Port), args)
 	if err != nil {
 		return nil, err
 	}

@@ -43,7 +43,7 @@ func vga(d lxd.InstanceServer, name string, spice_socket chan string) {
 	var socket string
 	var listener net.Listener
 
-	listener, err = net.Listen("tcp", "127.0.0.1:0")
+	listener, err = net.Listen("tcp", ":0")
 	if err != nil {
 		logger.Error(err.Error())
 		return
@@ -51,7 +51,7 @@ func vga(d lxd.InstanceServer, name string, spice_socket chan string) {
 	defer listener.Close()
 
 	addr := listener.Addr().(*net.TCPAddr)
-	socket = fmt.Sprintf("ws://127.0.0.1:%d", addr.Port)
+	socket = fmt.Sprintf("ws://0.0.0.0:%d", addr.Port)
 
 	op, connect, err := d.ConsoleInstanceDynamic(name, req, &consoleArgs)
 	if err != nil {
@@ -88,5 +88,4 @@ func vga(d lxd.InstanceServer, name string, spice_socket chan string) {
 		logger.Error(err.Error())
 		return
 	}
-
 }
