@@ -9,12 +9,12 @@ import (
 	"github.com/gorilla/mux"
 )
 
-func StartServer() {
+func StartServer(host string) {
 	router := mux.NewRouter()
 
 	router.HandleFunc("/instance/{name}", func(w http.ResponseWriter, r *http.Request) {
 
-		d, err := InitLxdInstanceServer("127.0.0.1")
+		d, err := InitLxdInstanceServer(host)
 		if err != nil {
 			logger.Error(err.Error())
 			return
